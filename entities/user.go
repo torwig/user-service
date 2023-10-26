@@ -10,6 +10,7 @@ type User struct {
 	Address     string
 	Deleted     bool
 	CreatedAt   time.Time
+	DeletedAt   *time.Time
 }
 
 func (u User) IsDeleted() bool {
