@@ -6,6 +6,8 @@ import (
 	"github.com/torwig/user-service/entities"
 )
 
+const maxNumberOfPermissions = 4
+
 var (
 	ErrUnexpectedIssuer        = errors.New("unexpected token issuer")
 	ErrUnexpectedClaims        = errors.New("unexpected claims received")
@@ -47,7 +49,8 @@ func (a *Authenticator) ParseAccessToken(t string) (*entities.AuthenticatedUser,
 		return nil, ErrInvalidAccessToken
 	}
 
-	if iss, err := token.Claims.GetIssuer(); err != nil || iss != a.cfg.Issuer {
+	iss, err := token.Claims.GetIssuer()
+	if err != nil || iss != a.cfg.Issuer {
 		return nil, ErrUnexpectedIssuer
 	}
 
@@ -56,22 +59,22 @@ func (a *Authenticator) ParseAccessToken(t string) (*entities.AuthenticatedUser,
 		return nil, ErrUnexpectedClaims
 	}
 
-	options := make([]entities.UserAuthOption, 0, 4)
+	permissions := make([]entities.UserPermission, 0, maxNumberOfPermissions)
 
 	if claims.CanCreateUsers {
-		options = append(options, entities.CreateUsersGranted())
+		permissions = append(permissions, entities.CreateUsersGranted())
 	}
 	if claims.CanViewUsers {
-		options = append(options, entities.ViewUsersGranted())
+		permissions = append(permissions, entities.ViewUsersGranted())
 	}
 	if claims.CanUpdateUsers {
-		options = append(options, entities.UpdateUsersGranted())
+		permissions = append(permissions, entities.UpdateUsersGranted())
 	}
 	if claims.CanDeleteUsers {
-		options = append(options, entities.DeleteUsersGranted())
+		permissions = append(permissions, entities.DeleteUsersGranted())
 	}
 
-	au := entities.NewAuthenticatedUser(claims.UserID, options...)
+	au := entities.NewAuthenticatedUser(claims.UserID, permissions...)
 
 	return au, nil
 }

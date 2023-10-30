@@ -3,7 +3,7 @@ VERSION=$(shell git describe --exact-match --tags HEAD 2>/dev/null || git rev-pa
 ifeq ($(VERSION),)
 	VERSION = Undefined
 endif
-LDFLAGS = -ldflags "-X main.Version=$(VERSION)"
+LDFLAGS = -ldflags "-X main.version=$(VERSION)"
 
 ## help: print the help message
 .PHONY: help

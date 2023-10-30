@@ -68,7 +68,8 @@ func (s *Service) DeleteUser(ctx context.Context, id int64) error {
 		return errors.Wrap(err, "failed to get user from repository")
 	}
 
-	if err := s.userRepo.Delete(ctx, id); err != nil {
+	err = s.userRepo.Delete(ctx, id)
+	if err != nil {
 		return errors.Wrap(err, "failed to delete user from repository")
 	}
 

@@ -10,6 +10,14 @@ import (
 	"github.com/pkg/errors"
 )
 
+const (
+	requestReadTimeout    = 5 * time.Second
+	headerReadTimeout     = 2 * time.Second
+	responseWriteTimeout  = 5 * time.Second
+	connIdleTimeout       = 30 * time.Second
+	serverShutdownTimeout = 5 * time.Second
+)
+
 type Config struct {
 	BindAddress string `yaml:"bind_address"`
 }
@@ -31,19 +39,27 @@ func (s *Server) Run(handler http.Handler) error {
 
 	s.server = &http.Server{
 		Handler:           handler,
-		ReadTimeout:       5 * time.Second,
-		ReadHeaderTimeout: 2 * time.Second,
-		WriteTimeout:      5 * time.Second,
-		IdleTimeout:       30 * time.Second,
+		ReadTimeout:       requestReadTimeout,
+		ReadHeaderTimeout: headerReadTimeout,
+		WriteTimeout:      responseWriteTimeout,
+		IdleTimeout:       connIdleTimeout,
 	}
 
-	if err := s.server.Serve(listener); err != nil && !errors.Is(err, http.ErrServerClosed) {
+	err = s.server.Serve(listener)
+	if err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return fmt.Errorf("failed to run HTTP server: %w", err)
 	}
 
 	return nil
 }
 
-func (s *Server) Shutdown(ctx context.Context) error {
-	return s.server.Shutdown(ctx)
+func (s *Server) Shutdown() error {
+	ctx, cancel := context.WithTimeout(context.Background(), serverShutdownTimeout)
+	defer cancel()
+
+	if err := s.server.Shutdown(ctx); err != nil {
+		return errors.Wrap(err, "failed to shutdown HTTP server gracefully")
+	}
+
+	return nil
 }

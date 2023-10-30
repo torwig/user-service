@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/pkg/errors"
 	"github.com/torwig/user-service/adapters/user"
@@ -19,12 +18,12 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-var (
-	Version        = "Undefined"
-	configFilePath = "config.yaml"
-)
-
 func main() {
+	var (
+		version        = "Undefined"
+		configFilePath = "config.yaml"
+	)
+
 	flag.StringVar(&configFilePath, "c", configFilePath, "path to config file")
 	flag.Parse()
 
@@ -38,7 +37,7 @@ func main() {
 		_ = logger.Sync()
 	}(logger)
 
-	logger.Infof("starting service, version=%s", Version)
+	logger.Infof("starting service, version=%s", version)
 
 	repo, err := user.NewPostgresRepository(cfg.Repository)
 	if err != nil {
@@ -62,13 +61,11 @@ func main() {
 	errGroup.Go(func() error {
 		<-errCtx.Done()
 
-		shutdownCtx, cancelFunc := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancelFunc()
-
-		return srv.Shutdown(shutdownCtx)
+		return srv.Shutdown()
 	})
 
-	if err := errGroup.Wait(); err != nil && errors.Is(err, context.Canceled) {
+	err = errGroup.Wait()
+	if err != nil && errors.Is(err, context.Canceled) {
 		logger.Errorf("service error: %s", err)
 	}
 

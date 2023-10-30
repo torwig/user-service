@@ -8,36 +8,36 @@ type AuthenticatedUser struct {
 	canViewOthers   bool
 }
 
-type UserAuthOption func(user *AuthenticatedUser)
+type UserPermission func(user *AuthenticatedUser)
 
-func CreateUsersGranted() UserAuthOption {
+func CreateUsersGranted() UserPermission {
 	return func(au *AuthenticatedUser) {
 		au.canCreate = true
 	}
 }
 
-func DeleteUsersGranted() UserAuthOption {
+func DeleteUsersGranted() UserPermission {
 	return func(au *AuthenticatedUser) {
 		au.canDelete = true
 	}
 }
 
-func UpdateUsersGranted() UserAuthOption {
+func UpdateUsersGranted() UserPermission {
 	return func(au *AuthenticatedUser) {
 		au.canUpdateOthers = true
 	}
 }
 
-func ViewUsersGranted() UserAuthOption {
+func ViewUsersGranted() UserPermission {
 	return func(au *AuthenticatedUser) {
 		au.canViewOthers = true
 	}
 }
 
-func NewAuthenticatedUser(id int64, options ...UserAuthOption) *AuthenticatedUser {
+func NewAuthenticatedUser(id int64, permissions ...UserPermission) *AuthenticatedUser {
 	au := &AuthenticatedUser{id: id}
 
-	for _, o := range options {
+	for _, o := range permissions {
 		o(au)
 	}
 

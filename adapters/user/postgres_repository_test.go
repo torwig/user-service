@@ -100,13 +100,14 @@ func prepareDatabaseConnection(pool *dockertest.Pool, dsn string) error {
 			return errors.Wrap(err, "failed to create a database connection")
 		}
 
-		if err := applyMigrations(conn, migrationsLocation); err != nil {
+		err = applyMigrations(conn, migrationsLocation)
+		if err != nil {
 			return errors.Wrap(err, "failed to apply migrations")
 		}
 
 		_ = conn.Close()
 
-		r, err := user.NewPostgresRepository(dsn)
+		r, err := user.NewPostgresRepository(user.Config{DSN: dsn})
 		if err != nil {
 			return errors.Wrap(err, "failed to create user repository")
 		}

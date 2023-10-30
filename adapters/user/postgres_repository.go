@@ -34,7 +34,7 @@ type PostgresRepository struct {
 func NewPostgresRepository(repoCfg Config) (*PostgresRepository, error) {
 	cfg, err := pgxpool.ParseConfig(repoCfg.DSN)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to parse connection string")
 	}
 
 	cfg.MaxConnLifetime = maxConnLifetime
@@ -49,11 +49,12 @@ func NewPostgresRepository(repoCfg Config) (*PostgresRepository, error) {
 
 	conn, err := pgxpool.NewWithConfig(ctx, cfg)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to create connection pool")
 	}
 
-	if err := conn.Ping(ctx); err != nil {
-		return nil, err
+	err = conn.Ping(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to ping the database")
 	}
 
 	return &PostgresRepository{db: conn}, nil
@@ -112,7 +113,11 @@ func (r *PostgresRepository) Get(ctx context.Context, id int64) (entities.User, 
 	return user, nil
 }
 
-func (r *PostgresRepository) Update(ctx context.Context, id int64, params entities.UpdateUserParams) (entities.User, error) {
+func (r *PostgresRepository) Update(
+	ctx context.Context,
+	id int64,
+	params entities.UpdateUserParams,
+) (entities.User, error) {
 	nothingToUpdate := params == entities.UpdateUserParams{}
 	if nothingToUpdate {
 		return r.Get(ctx, id)
@@ -145,7 +150,8 @@ func (r *PostgresRepository) Update(ctx context.Context, id int64, params entiti
 		return user, errors.Wrap(err, "failed to build a query")
 	}
 
-	if err := pgxscan.Get(ctx, r.db, &user, sql, args...); err != nil {
+	err = pgxscan.Get(ctx, r.db, &user, sql, args...)
+	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return user, entities.ErrUserNotFound
 		}
