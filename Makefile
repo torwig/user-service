@@ -16,6 +16,7 @@ help:
 install-tools:
 	go install golang.org/x/tools/cmd/goimports@latest
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+	go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@latest
 
 ## tidy: runs additional commands/tools to tidy the codebase
 .PHONY: tidy
@@ -43,3 +44,7 @@ lint:
 .PHONY: build
 build:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build $(LDFLAGS) -o $(BINARY_NAME).bin cmd/$(BINARY_NAME)/main.go
+
+## generate Go models from OpenAPI specification via oapi-codegen
+oapi-codegen:
+	oapi-codegen -package generated -generate=types ports/http/docs/openapi.yaml > ports/http/generated/service.go

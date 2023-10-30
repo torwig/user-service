@@ -149,24 +149,22 @@ func purgeResource(pool *dockertest.Pool, resource *dockertest.Resource) {
 }
 
 func TestPostgresRepository_Create(t *testing.T) {
-	user1Params := entities.CreateUserParams{
+	userParams := entities.CreateUserParams{
 		FirstName:   "John",
 		LastName:    "Wick",
 		PhoneNumber: "+1234567890",
 		Address:     "New York, 123 Lincoln Square",
 	}
 
-	id, err := repo.Create(context.Background(), user1Params)
+	createdUser, err := repo.Create(context.Background(), userParams)
 	require.NoError(t, err)
-	assert.Greater(t, id, int64(0))
+	assert.Greater(t, createdUser.ID, int64(0))
 
-	user1, err := repo.Get(context.Background(), id)
-	require.NoError(t, err)
-	assert.False(t, user1.IsDeleted())
-	assert.Equal(t, user1Params.FirstName, user1.FirstName)
-	assert.Equal(t, user1Params.LastName, user1.LastName)
-	assert.Equal(t, user1Params.PhoneNumber, user1.PhoneNumber)
-	assert.Equal(t, user1Params.Address, user1.Address)
+	assert.False(t, createdUser.IsDeleted())
+	assert.Equal(t, userParams.FirstName, createdUser.FirstName)
+	assert.Equal(t, userParams.LastName, createdUser.LastName)
+	assert.Equal(t, userParams.PhoneNumber, createdUser.PhoneNumber)
+	assert.Equal(t, userParams.Address, createdUser.Address)
 }
 
 func TestPostgresRepository_Get(t *testing.T) {
@@ -183,11 +181,16 @@ func TestPostgresRepository_Get(t *testing.T) {
 			Address:     "Los Angeles, 17 Beach Road",
 		}
 
-		id, err := repo.Create(context.Background(), userParams)
+		createdUser, err := repo.Create(context.Background(), userParams)
 		require.NoError(t, err)
 
-		_, err = repo.Get(context.Background(), id)
+		_, err = repo.Get(context.Background(), createdUser.ID)
 		require.NoError(t, err)
+		assert.False(t, createdUser.IsDeleted())
+		assert.Equal(t, userParams.FirstName, createdUser.FirstName)
+		assert.Equal(t, userParams.LastName, createdUser.LastName)
+		assert.Equal(t, userParams.PhoneNumber, createdUser.PhoneNumber)
+		assert.Equal(t, userParams.Address, createdUser.Address)
 	})
 }
 
@@ -209,10 +212,10 @@ func TestPostgresRepository_Update(t *testing.T) {
 			Address:     "Seattle, 555 Park Square",
 		}
 
-		id, err := repo.Create(context.Background(), userParams)
+		createdUser, err := repo.Create(context.Background(), userParams)
 		require.NoError(t, err)
 
-		updatedUser, err := repo.Update(context.Background(), id, entities.UpdateUserParams{})
+		updatedUser, err := repo.Update(context.Background(), createdUser.ID, entities.UpdateUserParams{})
 		require.NoError(t, err)
 		assert.Equal(t, userParams.FirstName, updatedUser.FirstName)
 		assert.Equal(t, userParams.LastName, updatedUser.LastName)
@@ -228,7 +231,7 @@ func TestPostgresRepository_Update(t *testing.T) {
 			Address:     "Washington, 321 Central Street",
 		}
 
-		id, err := repo.Create(context.Background(), userParams)
+		createdUser, err := repo.Create(context.Background(), userParams)
 		require.NoError(t, err)
 
 		updateParams := entities.UpdateUserParams{
@@ -236,7 +239,7 @@ func TestPostgresRepository_Update(t *testing.T) {
 			Address:     stringPtr("Different address"),
 		}
 
-		updatedUser, err := repo.Update(context.Background(), id, updateParams)
+		updatedUser, err := repo.Update(context.Background(), createdUser.ID, updateParams)
 		require.NoError(t, err)
 		assert.Equal(t, userParams.FirstName, updatedUser.FirstName)
 		assert.Equal(t, userParams.LastName, updatedUser.LastName)
@@ -259,18 +262,18 @@ func TestPostgresRepository_Delete(t *testing.T) {
 			Address:     "Miami, 777 Star Avenue",
 		}
 
-		id, err := repo.Create(context.Background(), userParams)
+		createdUser, err := repo.Create(context.Background(), userParams)
 		require.NoError(t, err)
 
-		err = repo.Delete(context.Background(), id)
+		err = repo.Delete(context.Background(), createdUser.ID)
 		require.NoError(t, err)
 
-		deletedUser, err := repo.Get(context.Background(), id)
+		deletedUser, err := repo.Get(context.Background(), createdUser.ID)
 		require.NoError(t, err)
 		assert.True(t, deletedUser.IsDeleted())
 
 		// deleting already deleted user returns no error
-		deletedUser, err = repo.Get(context.Background(), id)
+		err = repo.Delete(context.Background(), createdUser.ID)
 		require.NoError(t, err)
 	})
 }

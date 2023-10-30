@@ -59,27 +59,27 @@ func (r *PostgresRepository) Close() {
 	r.db.Close()
 }
 
-func (r *PostgresRepository) Create(ctx context.Context, params entities.CreateUserParams) (int64, error) {
+func (r *PostgresRepository) Create(ctx context.Context, params entities.CreateUserParams) (entities.User, error) {
+	var user entities.User
+
 	stmt := sq.
 		Insert(userTableName).
 		Columns("first_name", "last_name", "phone_number", "address").
 		Values(params.FirstName, params.LastName, params.PhoneNumber, params.Address).
-		Suffix("RETURNING id").
+		Suffix("RETURNING id, first_name, last_name, phone_number, address, deleted, created_at, deleted_at").
 		PlaceholderFormat(sq.Dollar)
 
 	sql, args, err := stmt.ToSql()
 	if err != nil {
-		return 0, errors.Wrap(err, "failed to build a query")
+		return user, errors.Wrap(err, "failed to build a query")
 	}
 
-	var id int64
-
-	err = r.db.QueryRow(ctx, sql, args...).Scan(&id)
+	err = pgxscan.Get(ctx, r.db, &user, sql, args...)
 	if err != nil {
-		return 0, errors.Wrap(err, "failed to execute a query")
+		return user, errors.Wrap(err, "failed to execute a query")
 	}
 
-	return id, nil
+	return user, nil
 }
 
 func (r *PostgresRepository) Get(ctx context.Context, id int64) (entities.User, error) {

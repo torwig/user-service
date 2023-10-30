@@ -8,7 +8,7 @@ import (
 )
 
 type UserRepository interface {
-	Create(ctx context.Context, params entities.CreateUserParams) (int64, error)
+	Create(ctx context.Context, params entities.CreateUserParams) (entities.User, error)
 	Get(ctx context.Context, id int64) (entities.User, error)
 	Update(ctx context.Context, id int64, params entities.UpdateUserParams) (entities.User, error)
 	Delete(ctx context.Context, id int64) error
@@ -22,13 +22,13 @@ func New(userRepo UserRepository) *Service {
 	return &Service{userRepo: userRepo}
 }
 
-func (s *Service) CreateUser(ctx context.Context, params entities.CreateUserParams) (int64, error) {
-	id, err := s.userRepo.Create(ctx, params)
+func (s *Service) CreateUser(ctx context.Context, params entities.CreateUserParams) (entities.User, error) {
+	user, err := s.userRepo.Create(ctx, params)
 	if err != nil {
-		return 0, errors.Wrap(err, "failed to create user in repository")
+		return user, errors.Wrap(err, "failed to create user in repository")
 	}
 
-	return id, nil
+	return user, nil
 }
 
 func (s *Service) GetUser(ctx context.Context, id int64) (entities.User, error) {
@@ -38,7 +38,7 @@ func (s *Service) GetUser(ctx context.Context, id int64) (entities.User, error) 
 	}
 
 	if user.IsDeleted() {
-		return entities.User{}, entities.ErrUserDeleted
+		return entities.User{}, entities.ErrUserNotFound
 	}
 
 	return user, nil
@@ -51,7 +51,7 @@ func (s *Service) UpdateUser(ctx context.Context, id int64, params entities.Upda
 	}
 
 	if existingUser.IsDeleted() {
-		return entities.User{}, entities.ErrUserDeleted
+		return entities.User{}, entities.ErrUserNotFound
 	}
 
 	updatedUser, err := s.userRepo.Update(ctx, id, params)
@@ -63,6 +63,11 @@ func (s *Service) UpdateUser(ctx context.Context, id int64, params entities.Upda
 }
 
 func (s *Service) DeleteUser(ctx context.Context, id int64) error {
+	_, err := s.userRepo.Get(ctx, id)
+	if err != nil {
+		return errors.Wrap(err, "failed to get user from repository")
+	}
+
 	if err := s.userRepo.Delete(ctx, id); err != nil {
 		return errors.Wrap(err, "failed to delete user from repository")
 	}
