@@ -23,7 +23,7 @@ func NewServer(config Config) *Server {
 	return &Server{cfg: config}
 }
 
-func (s *Server) Run(handler http.Handler) {
+func (s *Server) Run(handler http.Handler) error {
 	listener, err := net.Listen("tcp", s.cfg.BindAddress)
 	if err != nil {
 		panic(fmt.Sprintf("failed to start listen on TCP socket: %s", err))
@@ -38,10 +38,12 @@ func (s *Server) Run(handler http.Handler) {
 	}
 
 	if err := s.server.Serve(listener); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		panic(fmt.Sprintf("failed to serve HTTP: %s", err))
+		return fmt.Errorf("failed to run HTTP server: %w", err)
 	}
+
+	return nil
 }
 
-func (s *Server) Shutdown(ctx context.Context) {
-	_ = s.server.Shutdown(ctx)
+func (s *Server) Shutdown(ctx context.Context) error {
+	return s.server.Shutdown(ctx)
 }

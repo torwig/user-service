@@ -23,12 +23,16 @@ const (
 	userTableName         = "users"
 )
 
+type Config struct {
+	DSN string
+}
+
 type PostgresRepository struct {
 	db *pgxpool.Pool
 }
 
-func NewPostgresRepository(dsn string) (*PostgresRepository, error) {
-	cfg, err := pgxpool.ParseConfig(dsn)
+func NewPostgresRepository(repoCfg Config) (*PostgresRepository, error) {
+	cfg, err := pgxpool.ParseConfig(repoCfg.DSN)
 	if err != nil {
 		return nil, err
 	}
