@@ -97,6 +97,8 @@ func (h *Handler) createUser(w http.ResponseWriter, r *http.Request) {
 
 	createdUser, err := h.svc.CreateUser(r.Context(), req.ToCreateUserParams())
 	if err != nil {
+		h.log.Errorf("failed to create user: %s", err)
+
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -124,6 +126,8 @@ func (h *Handler) getUser(w http.ResponseWriter, r *http.Request) {
 
 	user, err := h.svc.GetUser(r.Context(), id)
 	if err != nil {
+		h.log.Errorf("failed to get user %d: %s", id, err)
+
 		if errors.Is(err, entities.ErrUserNotFound) {
 			w.WriteHeader(http.StatusNotFound)
 		} else {
@@ -162,6 +166,8 @@ func (h *Handler) updateUser(w http.ResponseWriter, r *http.Request) {
 
 	updatedUser, err := h.svc.UpdateUser(r.Context(), id, req.ToUpdateUserParams())
 	if err != nil {
+		h.log.Errorf("failed to update user %d: %s", id, err)
+
 		if errors.Is(err, entities.ErrUserNotFound) {
 			w.WriteHeader(http.StatusNotFound)
 		} else {
@@ -192,7 +198,10 @@ func (h *Handler) deleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.svc.DeleteUser(r.Context(), id); err != nil {
+	err = h.svc.DeleteUser(r.Context(), id)
+	if err != nil {
+		h.log.Errorf("failed to delete user %d: %s", id, err)
+
 		if errors.Is(err, entities.ErrUserNotFound) {
 			w.WriteHeader(http.StatusNotFound)
 		} else {
