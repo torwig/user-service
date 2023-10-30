@@ -18,11 +18,10 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+var version = "Undefined"
+
 func main() {
-	var (
-		version        = "Undefined"
-		configFilePath = "config.yaml"
-	)
+	var configFilePath = "config.yaml"
 
 	flag.StringVar(&configFilePath, "c", configFilePath, "path to config file")
 	flag.Parse()

@@ -1,0 +1,12 @@
+log:
+  level: "info" # possible values: debug, info, warn, error, panic, fatal
+
+repository:
+  dsn: "postgresql://users:users@localhost:5432/users?sslmode=disable"
+
+jwt:
+  issuer: "Example Company"
+  secret_key: "protected-key"
+
+http:
+  bind_address: ":8080"
