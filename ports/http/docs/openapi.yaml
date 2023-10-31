@@ -4,9 +4,13 @@ info:
   description: API documentation for User Service
   version: 0.0.1
 servers:
-  - url: /
-    description: Local server
-
+  - url: https://{hostname}
+    variables:
+      hostname:
+        default: localhost
+        description: Local server
+security:
+  - bearerAuth: []
 paths:
   /api/v1/health:
     get:
@@ -95,6 +99,7 @@ components:
     BearerAuth:
       type: http
       scheme: bearer
+      bearerFormat: JWT
   schemas:
     User:
       type: object
