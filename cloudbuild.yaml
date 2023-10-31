@@ -1,0 +1,8 @@
+steps:
+  - id: service-build-image
+    name: "gcr.io/cloud-builders/docker"
+    args: ["build", "-t", "gcr.io/simple-user-service/user-service", ".", "-f", "Dockerfile"]
+  - id: service-push-image
+    name: "gcr.io/cloud-builders/docker"
+    args: ["push", "gcr.io/simple-user-service/user-service"]
+    waitFor: [service-build-image]
