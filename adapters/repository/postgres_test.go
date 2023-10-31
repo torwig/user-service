@@ -29,7 +29,7 @@ const (
 	postgresUsername                   = "users"
 	postgresPassword                   = "users"
 	postgresDatabaseName               = "users"
-	migrationsLocation                 = "../../migrations"
+	migrationsLocation                 = "../../db/migrations"
 )
 
 var repo *repository.PostgresRepository

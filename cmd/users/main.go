@@ -34,6 +34,8 @@ func main() {
 		panic(fmt.Sprintf("failed to create repository: %s", err))
 	}
 
+	logger.Info("successfully connected to user repository")
+
 	svc := service.New(repo)
 	authenticator := jwt.NewAuthenticator(cfg.JWT)
 	handler := http.NewHandler(svc, authenticator, logger)
@@ -45,6 +47,8 @@ func main() {
 	errGroup, errCtx := errgroup.WithContext(signalCtx)
 
 	errGroup.Go(func() error {
+		logger.Infof("starting HTTP-server on %s", cfg.HTTP.BindAddress)
+
 		return srv.Run(handler.Router())
 	})
 

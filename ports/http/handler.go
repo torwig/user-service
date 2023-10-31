@@ -54,13 +54,14 @@ func (h *Handler) Router() http.Handler {
 
 	r := chi.NewRouter()
 	r.Use(middleware.Recoverer)
-	r.Use(BearerTokenAuthentication(h.auth))
 
-	r.Handle("/docs/*", http.FileServer(http.FS(docsAsRootFS)))
+	r.Handle("/docs/*", http.StripPrefix("/docs/", http.FileServer(http.FS(docsAsRootFS))))
 
 	r.Get("/health", h.healthcheck)
 
 	r.Route("/api/v1/users", func(r chi.Router) {
+		r.Use(BearerTokenAuthentication(h.auth))
+
 		r.Post("/", h.createUser)
 
 		r.Route("/{id}", func(r chi.Router) {
