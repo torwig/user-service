@@ -17,7 +17,7 @@ var (
 
 type authClaims struct {
 	jwt.RegisteredClaims
-	UserID         int64 `json:"user_id,omitempty"`
+	UserID         int64 `json:"user_id"`
 	CanCreateUsers bool  `json:"can_create_users"`
 	CanDeleteUsers bool  `json:"can_delete_users"`
 	CanUpdateUsers bool  `json:"can_update_users"`
