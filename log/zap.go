@@ -8,7 +8,7 @@ import (
 )
 
 type Config struct {
-	Level zapcore.Level
+	Level string
 }
 
 func NewZapLogger(config Config) *zap.SugaredLogger {
@@ -17,8 +17,10 @@ func NewZapLogger(config Config) *zap.SugaredLogger {
 	encoderCfg.EncodeLevel = zapcore.CapitalLevelEncoder
 	encoderCfg.TimeKey = "time"
 
+	level, _ := zapcore.ParseLevel(config.Level)
+
 	loggerCfg := zap.Config{
-		Level:             zap.NewAtomicLevelAt(config.Level),
+		Level:             zap.NewAtomicLevelAt(level),
 		DisableCaller:     true,
 		DisableStacktrace: true,
 		Encoding:          "json",

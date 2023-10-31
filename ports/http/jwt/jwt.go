@@ -16,17 +16,17 @@ var (
 )
 
 type authClaims struct {
+	jwt.RegisteredClaims
 	UserID         int64 `json:"user_id,omitempty"`
 	CanCreateUsers bool  `json:"can_create_users"`
 	CanDeleteUsers bool  `json:"can_delete_users"`
 	CanUpdateUsers bool  `json:"can_update_users"`
 	CanViewUsers   bool  `json:"can_view_users"`
-	jwt.RegisteredClaims
 }
 
 type Config struct {
-	SecretKey string `yaml:"secret_key"`
-	Issuer    string `yaml:"issuer"`
+	SecretKey []byte
+	Issuer    string
 }
 
 type Authenticator struct {
@@ -43,15 +43,17 @@ func (a *Authenticator) ParseAccessToken(t string) (*entities.AuthenticatedUser,
 			return nil, ErrUnexpectedSigningMethod
 		}
 
-		return []byte(a.cfg.SecretKey), nil
+		return a.cfg.SecretKey, nil
 	})
 	if err != nil || !token.Valid {
 		return nil, ErrInvalidAccessToken
 	}
 
-	iss, err := token.Claims.GetIssuer()
-	if err != nil || iss != a.cfg.Issuer {
-		return nil, ErrUnexpectedIssuer
+	if a.cfg.Issuer != "" {
+		iss, issErr := token.Claims.GetIssuer()
+		if issErr != nil || iss != a.cfg.Issuer {
+			return nil, ErrUnexpectedIssuer
+		}
 	}
 
 	claims, ok := token.Claims.(*authClaims)

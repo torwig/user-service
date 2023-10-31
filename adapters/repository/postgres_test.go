@@ -1,4 +1,4 @@
-package user_test
+package repository_test
 
 import (
 	"context"
@@ -9,9 +9,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/torwig/user-service/adapters/repository"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/torwig/user-service/adapters/user"
 	"github.com/torwig/user-service/entities"
 
 	"github.com/golang-migrate/migrate/v4"
@@ -31,7 +32,7 @@ const (
 	migrationsLocation                 = "../../migrations"
 )
 
-var repo *user.PostgresRepository
+var repo *repository.PostgresRepository
 
 func TestMain(m *testing.M) {
 	pool, resource := createPostgresContainer()
@@ -107,7 +108,7 @@ func prepareDatabaseConnection(pool *dockertest.Pool, dsn string) error {
 
 		_ = conn.Close()
 
-		r, err := user.NewPostgresRepository(user.Config{DSN: dsn})
+		r, err := repository.NewPostgresRepository(repository.Config{DSN: dsn})
 		if err != nil {
 			return errors.Wrap(err, "failed to create user repository")
 		}

@@ -1,42 +1,67 @@
 package config
 
 import (
-	"io"
 	"os"
 
-	"github.com/pkg/errors"
-	"github.com/torwig/user-service/adapters/user"
+	"github.com/torwig/user-service/adapters/repository"
 	"github.com/torwig/user-service/log"
 	"github.com/torwig/user-service/ports/http"
 	"github.com/torwig/user-service/ports/http/jwt"
-	"gopkg.in/yaml.v2"
+)
+
+const (
+	defaultLogLevel       = "info"
+	defaultBindAddress    = ":8080"
+	envKeyLogLevel        = "USERS_LOG_LEVEL"
+	envKeyRepositoryURI   = "USERS_REPOSITORY_URI"
+	envKeyJWTSecret       = "USERS_JWT_SECRET" // #nosec G101
+	envKeyJWTIssuer       = "USERS_JWT_ISSUER"
+	envKeyHTTPBindAddress = "USERS_HTTP_BIND_ADDRESS"
 )
 
 type Config struct {
-	Log        log.Config  `yaml:"log"`
-	Repository user.Config `yaml:"repository"`
-	JWT        jwt.Config  `yaml:"jwt"`
-	HTTP       http.Config `yaml:"http"`
+	Log        log.Config
+	Repository repository.Config
+	JWT        jwt.Config
+	HTTP       http.Config
 }
 
-func ParseFromFile(filePath string) (*Config, error) {
-	file, err := os.Open(filePath)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to open file")
+func CreateFromEnv() *Config {
+	cfg := &Config{
+		Log:        createLogConfig(),
+		Repository: createRepositoryConfig(),
+		JWT:        createJWTConfig(),
+		HTTP:       createHTTPConfig(),
 	}
 
-	cfg, err := parse(file)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to parse configuration")
-	}
-
-	return cfg, nil
+	return cfg
 }
 
-func parse(source io.Reader) (*Config, error) {
-	cfg := Config{}
+func createLogConfig() log.Config {
+	level := os.Getenv(envKeyLogLevel)
+	if level == "" {
+		level = defaultLogLevel
+	}
 
-	err := yaml.NewDecoder(source).Decode(&cfg)
+	return log.Config{Level: level}
+}
 
-	return &cfg, err
+func createRepositoryConfig() repository.Config {
+	return repository.Config{DSN: os.Getenv(envKeyRepositoryURI)}
+}
+
+func createJWTConfig() jwt.Config {
+	return jwt.Config{
+		SecretKey: []byte(os.Getenv(envKeyJWTSecret)),
+		Issuer:    os.Getenv(envKeyJWTIssuer),
+	}
+}
+
+func createHTTPConfig() http.Config {
+	bindAddress := os.Getenv(envKeyHTTPBindAddress)
+	if bindAddress == "" {
+		bindAddress = defaultBindAddress
+	}
+
+	return http.Config{BindAddress: bindAddress}
 }

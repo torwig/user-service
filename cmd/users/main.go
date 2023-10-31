@@ -2,13 +2,12 @@ package main
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"os/signal"
 	"syscall"
 
 	"github.com/pkg/errors"
-	"github.com/torwig/user-service/adapters/user"
+	"github.com/torwig/user-service/adapters/repository"
 	"github.com/torwig/user-service/config"
 	"github.com/torwig/user-service/log"
 	"github.com/torwig/user-service/ports/http"
@@ -21,15 +20,7 @@ import (
 var version = "Undefined"
 
 func main() {
-	var configFilePath = "config.yaml"
-
-	flag.StringVar(&configFilePath, "c", configFilePath, "path to config file")
-	flag.Parse()
-
-	cfg, err := config.ParseFromFile(configFilePath)
-	if err != nil {
-		panic(fmt.Sprintf("failed to parse configuration: %s", err))
-	}
+	cfg := config.CreateFromEnv()
 
 	logger := log.NewZapLogger(cfg.Log)
 	defer func(logger *zap.SugaredLogger) {
@@ -38,7 +29,7 @@ func main() {
 
 	logger.Infof("starting service, version=%s", version)
 
-	repo, err := user.NewPostgresRepository(cfg.Repository)
+	repo, err := repository.NewPostgresRepository(cfg.Repository)
 	if err != nil {
 		panic(fmt.Sprintf("failed to create repository: %s", err))
 	}

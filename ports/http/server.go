@@ -19,7 +19,7 @@ const (
 )
 
 type Config struct {
-	BindAddress string `yaml:"bind_address"`
+	BindAddress string
 }
 
 type Server struct {
