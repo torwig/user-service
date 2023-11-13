@@ -56,20 +56,6 @@ For the test purposes, the following JWT-token can be used  (user with full perm
 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyX2F1dGhlbnRpY2F0aW9uIiwidXNlcl9pZCI6MTIzNDU2Nzg5LCJjYW5fY3JlYXRlX3VzZXJzIjp0cnVlLCJjYW5fZGVsZXRlX3VzZXJzIjp0cnVlLCJjYW5fdXBkYXRlX3VzZXJzIjp0cnVlLCJjYW5fdmlld191c2VycyI6dHJ1ZSwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE3NjE4OTg2MjEsImlzcyI6ImxvY2FsaG9zdCJ9.HVQMV6ENzpU8SIBPi_fsBn_d5FdyW1ej-a0_0qkAYqA
 ```
 
-
-
-## Google Cloud
-
-The service was deployed to Cloud Run and using Cloud Postgres. It is available at https://user-service-l67fhli2oq-lm.a.run.app .
-
-Use https://user-service-l67fhli2oq-lm.a.run.app/docs/index.html to see the OpenAPI specification. API endpoints are mounted on `/api/v1/users`.
-
-The following JWT-token (user with full permissions to create, view, update, delete users) can be used:
-
-```bash
-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyX2F1dGhlbnRpY2F0aW9uIiwidXNlcl9pZCI6MTIzNDU2Nzg5LCJjYW5fY3JlYXRlX3VzZXJzIjp0cnVlLCJjYW5fZGVsZXRlX3VzZXJzIjp0cnVlLCJjYW5fdXBkYXRlX3VzZXJzIjp0cnVlLCJjYW5fdmlld191c2VycyI6dHJ1ZSwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE3NjE4OTg2MjEsImlzcyI6ImxvY2FsaG9zdCJ9.HVQMV6ENzpU8SIBPi_fsBn_d5FdyW1ej-a0_0qkAYqA
-```
-
 If you prefer Postman use the following settings on the `Authorization` tab:
 
 - Algorithm: `HS256`
